@@ -262,6 +262,20 @@
       color: #000;
    }
 
+   &__label {
+      display: flex;
+      align-items: center;
+      position: relative;
+   }
+
+   &__search-img {
+      position: absolute;
+      top: 50%;
+      right: 5px;
+      transform: translateY(-50%);
+      cursor: pointer;
+   }
+
    &__search {
       background-size: 15px 15px;
       background-repeat: no-repeat;
@@ -274,7 +288,7 @@
       width: 250px;
       height: 45px;
       padding: 12px 36px;
-      padding-right: 12px;
+      padding-right: 25px;
       transition: 0.3s;
 
       &::placeholder {
@@ -297,6 +311,8 @@
    }
 
    &__product {
+      position: relative;
+      background-color: rgb(255, 255, 255);
       border: 1px solid #f3f3f3;
       border-radius: 40px;
       width: 210px;
@@ -310,6 +326,7 @@
    }
 
    &__favorites-btn {
+      position: absolute;
       border-radius: 8px;
       transition: 0.3s;
 
@@ -321,6 +338,7 @@
    &__favorites {}
 
    &__img {
+      margin: auto;
       margin-bottom: 14px;
    }
 
