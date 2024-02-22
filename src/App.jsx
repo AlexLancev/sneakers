@@ -1,106 +1,137 @@
-import React from 'react';
-import Card from "./components/card";
+import React from "react";
+import { Route, Routes } from "react-router-dom";
+import axios from "axios";
+import Home from "./components/pages/home";
+import Favorites from "./components/pages/favorites";
 import Header from "./components/header";
 import Drawer from "./components/drawer";
 
-import './App.scss';
-import hero from './assets/img/hero-bg.jpg'
-import search from './assets/img/search.svg'
-import delet from './assets/img/product-remove.svg'
-
-
+import "./App.scss";
 
 function App() {
-   const [cartOpened, setCartOpened] = React.useState(false);
-   const [items, setItems] = React.useState([]);
-   const [cartItems, setCartItems] = React.useState([]);
-   const [searchValue, setSearchValue] = React.useState('');
+  const [cartOpened, setCartOpened] = React.useState(false); // Состояние для открытия и закрытия корзины
+  const [items, setItems] = React.useState([]); // Состояние для списка товаров
+  const [cartItems, setCartItems] = React.useState([]); // Состояние для товаров в корзине
+  const [searchValue, setSearchValue] = React.useState(""); // Состояние для поискового запроса
+  const [favorites, setFavorites] = React.useState([]); // Состояние для товаров в избранном
+  const [isLoading, setIsLoading] = React.useState(true);
 
-   React.useEffect(() => {
-      fetch('https://65ceddcdbdb50d5e5f5a0f81.mockapi.io/items')
-         .then(response => response.json())
-         .then(json => setItems(json))
-   }, [])
+  React.useEffect(() => {
+    async function fetchData() {
+      // Запросы к API для получения данных о корзине, избранном и товарах
+      const cartResponse = await axios.get(
+        "https://65ceddcdbdb50d5e5f5a0f81.mockapi.io/cart"
+      );
+      const favoritesResponse = await axios.get(
+        "https://65d2e0f5522627d5010787f9.mockapi.io/favorites"
+      );
+      const itemsResponse = await axios.get(
+        "https://65ceddcdbdb50d5e5f5a0f81.mockapi.io/items"
+      );
 
-   const onAddToCart = (item) => {
-      setCartItems(prev => prev.some(el => el.id === item.id) ? prev : [...prev, item]);
-   }
+      // Заполнение соответствующих состояний полученными данными
+      
+      setIsLoading(false);
 
+      // Корзина
+      setCartItems(cartResponse.data);
 
-   const onChangeSearchInput = (event) => {
-      setSearchValue(event.target.value);
-   }
+      // Закладки
+      setFavorites(favoritesResponse.data);
 
-   return (
-      <div className="App">
+      // Список товаров при загрузке страницы
+      setItems(itemsResponse.data);
 
-         <div className="wrapper">
+    }
+    fetchData(); // Вызов функции получения данных при загрузке компонента
+  }, []);
 
-            {cartOpened &&
-               <Drawer
-                  onClose={() => setCartOpened(false)}
-                  items={cartItems}
-               />
-            }
+  const onAddToCart = (item) => {
+    // Добавление товара в корзину через API и обновление списка товаров в корзине
+    axios.post("https://65ceddcdbdb50d5e5f5a0f81.mockapi.io/cart", item);
+    setCartItems((prev) =>
+      prev.some((el) => el.id === item.id) ? prev : [...prev, item]
+    );
+    console.log(item);
+  };
 
-            <Header
-               onClickCart={() => setCartOpened(true)}
-            />
+  const onAddToFavorite = async (retObj) => {
+    try {
+      if (favorites.find((el) => Number(el.id) === Number(retObj.id))) {
+        axios.delete(
+          `https://65d2e0f5522627d5010787f9.mockapi.io/favorites/${retObj.id}`
+        );
+      } else {
+        const { data } = await axios.post(
+          "https://65d2e0f5522627d5010787f9.mockapi.io/favorites",
+          retObj
+        );
+        setFavorites((prev) =>
+          prev.some((el) => el.id === retObj.id) ? prev : [...prev, data]
+        );
+      }
+    } catch (error) {
+      alert("Не удалось добавить в избранное");
+    }
+  };
 
-            <main className="main">
-               <div className="container">
-                  <div className="hero" style={{ backgroundImage: `url(${hero})` }}>
-                     <div className="buy">
-                        <div className="buy__inner">
-                           <span className="buy__name">Stan Smith</span>
-                           <span className="buy__name buy__name--black">Forever!</span>
-                        </div>
-                        <button className="buy__btn" type='button'>Купить</button>
-                     </div>
-                  </div>
-                  <div className="sneakers">
-                     <header className="sneakers__header">
-                        <h2 className="sneakers__title">Все кроссовки</h2>
-                        <label className="sneakers__search-label">
-                           <input onChange={onChangeSearchInput} value={searchValue} className="sneakers__search" type="search" placeholder='Поиск...' style={{ backgroundImage: `url(${search})` }} />
-                           {searchValue &&
-                              <img
-                                 onClick={() => setSearchValue('')}
-                                 className="sneakers__search-img"
-                                 src={delet}
-                                 width={15}
-                                 height={15}
-                                 alt=""
-                                 aria-hidden="true"
-                                 aria-label="Очистить поле ввода"
-                              />
-                           }
+  const onRemoveItem = (id) => {
+    axios.delete(`https://65ceddcdbdb50d5e5f5a0f81.mockapi.io/cart/${id}`);
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
 
-                        </label>
-                     </header>
-                     <ul className="sneakers__grid">
-                        {items
-                        .filter(item => item.title.toLowerCase().includes(searchValue.toLowerCase()))
-                        .map(obj => (
-                           <Card
-                              key={obj.id}
-                              id={obj.id}
-                              title={obj.title}
-                              price={obj.price}
-                              imageUrl={obj.imageUrl}
-                              onFavorite={() => console.log('Добавили в закладки')}
-                              onPlus={(item) => onAddToCart(item)}
-                           />
-                        ))}
-                     </ul>
-                  </div>
-               </div>
-            </main>
+  const onChangeSearchInput = (event) => {
+    setSearchValue(event.target.value);
+  };
 
-         </div>
+  return (
+    <div className="App">
+      <div className="wrapper">
+        {cartOpened && (
+          <Drawer
+            onClose={() => setCartOpened(false)}
+            items={cartItems}
+            onRemove={onRemoveItem}
+          />
+        )}
 
+        <Header onClickCart={() => setCartOpened(true)} />
+
+        <main className="main">
+          <div className="container">
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <Home
+                    items={items}
+                    searchValue={searchValue}
+                    setSearchValue={setSearchValue}
+                    onChangeSearchInput={onChangeSearchInput}
+                    onAddToFavorite={onAddToFavorite}
+                    onAddToCart={onAddToCart}
+                    isLoading={isLoading}
+                  />
+                }
+              />
+            </Routes>
+
+            <Routes>
+              <Route
+                path="/favorites"
+                element={
+                  <Favorites
+                    items={favorites}
+                    onAddToFavorite={onAddToFavorite}
+                  />
+                }
+              />
+            </Routes>
+          </div>
+        </main>
       </div>
-   );
+    </div>
+  );
 }
 
 export default App;
