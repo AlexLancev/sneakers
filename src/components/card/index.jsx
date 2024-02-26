@@ -10,8 +10,9 @@ function Card({
   onFavorite,
   favorited = false,
   isLoading,
+  added = false,
 }) {
-  const [isAdded, setIsAdded] = React.useState(false);
+  const [isAdded, setIsAdded] = React.useState(added);
   const [isFavorite, setIsFavorite] = React.useState(!favorited);
 
   function onClickPlus() {
@@ -75,7 +76,7 @@ function Card({
               </div>
               <button className="sneakers__add" type="button">
                 <img
-                  title={!isAdded ? "Добавить в корзину" : "Удалить из корзины"}
+                  // title={!isAdded ? "Добавить в корзину" : "Удалить из корзины"}
                   className="sneakers__add-img"
                   width={32}
                   height={32}

@@ -13,28 +13,27 @@ function Home({
   onAddToCart,
   onAddToFavorite,
   isLoading,
+  cartItems
 }) {
 
   const renderItems = () => {
 
     const filtredItems = items.filter((item) =>
-      item.title.toLowerCase().includes(searchValue.toLowerCase())
+      item.title.toLowerCase().includes(searchValue.toLowerCase()),
     );
 
-    return (isLoading ? [...Array(8)] : filtredItems).map((obj, index) => (
+    // (isLoading ? [...Array(8)] : filtredItems)
+
+    return filtredItems.map((obj, index) => (
       <Card
         key={index}
-        // id={obj.id}
-        // title={obj.title}
-        // price={obj.price}
-        // imageUrl={obj.imageUrl}
         onFavorite={(item) => onAddToFavorite(item)}
         onPlus={(item) => onAddToCart(item)}
+        added={cartItems.some((item) => Number(item.id) === Number(obj.id))}
         isLoading={isLoading}
         {...obj}
       />
     ));
-
   };
   
   return (
